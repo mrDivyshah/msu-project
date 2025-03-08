@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const API_URL = `https://chatappserver-kjob.onrender.com/join`;
 
@@ -10,7 +12,7 @@ export default function LoginPage() {
 
   const handleLogin = async (username: string) => {
     if (!username.trim()) {
-      alert("Please enter a name!");
+      toast.warn("⚠️ Please enter a name!");
       return;
     }
 
@@ -20,7 +22,7 @@ export default function LoginPage() {
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username }),
+        body: JSON.stringify({ username }),
       });
 
       const text = await res.text();
@@ -39,15 +41,17 @@ export default function LoginPage() {
           localStorage.setItem("user", username);
           console.log("✅ Name stored in localStorage:", username);
 
-          alert("✅ Login successful!");
-          router.push("/");
+          toast.success("✅ Login successful!");
+          setTimeout(() => router.push("/"), 1000); // Redirect after success
         } else {
-          console.error("❌ No UUID returned in API response.");
+          toast.error("❌ No UUID returned in API response.");
         }
       } catch (jsonError) {
+        toast.error("❌ JSON Parsing Failed. Check console for details.");
         console.error("❌ JSON Parsing Failed:", jsonError, "Response:", text);
       }
     } catch (error) {
+      toast.error(`❌ Login failed: ${error.message}`);
       console.error("❌ Login failed:", error);
     } finally {
       setLoading(false);
@@ -56,6 +60,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="bg-white/10 backdrop-blur-lg p-8 rounded-2xl shadow-lg max-w-md w-full text-center border border-white/20">
         <h1 className="text-3xl font-bold text-white mb-6">
           Login as Anonymous
