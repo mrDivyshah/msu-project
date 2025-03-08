@@ -3,6 +3,7 @@ import SideBar from "./sidebar";
 import ConfessionForm from "./components/ConfessionForm";
 import { io, Socket } from "socket.io-client";
 import { Trash2 } from "lucide-react";
+import { useRouter } from "next/router"; // Import Next.js router
 
 type Message = {
   message: string;
@@ -15,6 +16,7 @@ type User = { userId: string; name: string };
 const API_URL = `https://chatappserver-kjob.onrender.com/`;
 
 export default function Home() {
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -100,51 +102,55 @@ export default function Home() {
     const storedUser = localStorage.getItem("user");
     const uuid = localStorage.getItem("uuid") || "";
 
-    if (storedUser && uuid) {
-      let userData: User;
-      try {
-        userData = JSON.parse(storedUser);
-      } catch {
-        userData = { name: storedUser, userId: uuid };
-      }
-      setUser(userData);
-
-      const newSocket = io(API_URL, { transports: ["websocket"] });
-
-      newSocket.on("connect", () => {
-        console.log("WebSocket connected");
-        newSocket.emit("register", { username: userData.name, uuid });
-      });
-
-      newSocket.on("receiveMessage", (msg) => {
-        console.log("Received Message:", msg);
-        setMessages((prev) => [...prev, msg]); // Add new messages at the end
-
-        if (audioRef.current) {
-          audioRef.current.volume = 1.0; // Ensure it's not muted
-          audioRef.current.muted = false;
-          audioRef.current.currentTime = 0; // Restart audio
-          audioRef.current
-            .play()
-            .catch((err) => console.warn("Audio playback blocked:", err));
-        }
-
-        // Show browser notification if tab is inactive
-        if (!isTabActive && Notification.permission === "granted") {
-          new Notification("New Message", {
-            body: msg.message,
-            icon: "/favicon.ico",
-          });
-        }
-      });
-
-      setSocket(newSocket);
-
-      return () => {
-        newSocket.disconnect();
-        console.log("WebSocket disconnected");
-      };
+    if (!storedUser || !uuid) {
+      // Redirect to login page if user data is missing
+      router.push("/login");
+      return;
     }
+
+    let userData: User;
+    try {
+      userData = JSON.parse(storedUser);
+    } catch {
+      userData = { name: storedUser, userId: uuid };
+    }
+    setUser(userData);
+
+    const newSocket = io(API_URL, { transports: ["websocket"] });
+
+    newSocket.on("connect", () => {
+      console.log("WebSocket connected");
+      newSocket.emit("register", { username: userData.name, uuid });
+    });
+
+    newSocket.on("receiveMessage", (msg) => {
+      console.log("Received Message:", msg);
+      setMessages((prev) => [...prev, msg]); // Add new messages at the end
+
+      if (audioRef.current) {
+        audioRef.current.volume = 1.0;
+        audioRef.current.muted = false;
+        audioRef.current.currentTime = 0; // Restart audio
+        audioRef.current
+          .play()
+          .catch((err) => console.warn("Audio playback blocked:", err));
+      }
+
+      // Show browser notification if tab is inactive
+      if (!isTabActive && Notification.permission === "granted") {
+        new Notification("New Message", {
+          body: msg.message,
+          icon: "/favicon.ico",
+        });
+      }
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.disconnect();
+      console.log("WebSocket disconnected");
+    };
   }, [isTabActive]);
 
   // Fetch messages when a user is selected
