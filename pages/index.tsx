@@ -171,7 +171,7 @@ export default function Home() {
       if (!user || !selectedUser) return;
       try {
         const res = await fetch(`${API_URL}/messages/${user.userId}`);
-        if (!res.ok) throw new Error("Failed to fetch messages");
+
         const fetchedMessages: Message[] = await res.json();
 
         setMessages(
