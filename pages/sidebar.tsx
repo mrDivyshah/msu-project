@@ -80,7 +80,7 @@ export default function SideBar({
       <div style={{ display: "none" }}>{socket?.active}</div>
       {/* Sidebar Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-700">
-        {!isCollapsed && <h2 className="text-lg font-bold">Chat</h2>}
+        {!isCollapsed && <h2 className="text-lg font-bold">Silentbond</h2>}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="p-2 hover:bg-gray-700 rounded"
