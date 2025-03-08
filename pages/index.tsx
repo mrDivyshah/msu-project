@@ -12,7 +12,7 @@ type Message = {
 };
 type User = { userId: string; name: string };
 
-const API_URL = `http://localhost:5000`;
+const API_URL = `https://chatappserver-kjob.onrender.com/`;
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);

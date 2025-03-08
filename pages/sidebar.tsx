@@ -10,7 +10,7 @@ type SideBarProps = {
   setSelectedUser: (user: User) => void;
 };
 
-const API_URL = "http://localhost:5000"; // Backend API
+const API_URL = "https://chatappserver-kjob.onrender.com/"; // Backend API
 
 export default function SideBar({
   selectedUser,
